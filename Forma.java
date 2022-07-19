@@ -45,9 +45,12 @@ class PointR3 {
 	public static PointR3 toCartesian(double rho_, double theta_, double phi_){
 		return new PointR3(rho_*Math.cos(theta_)*Math.sin(phi_),rho_*Math.sin(theta_)*Math.sin(phi_),rho_*Math.cos(phi_));
 	}
-	public static PointR3 toCartesianFromCyl(double rho_, double theta_, double z_){
+	public static PointR3 toCartesianFromCil(double rho_, double theta_, double z_){
 		return new PointR3(rho_*Math.cos(theta_),rho_*Math.sin(theta_),z_);
 	}
+	public static PointR3 toCartesian(double sx_, double sy_, double sz_, double theta_, double phi_){
+		return new PointR3(sx_*Math.cos(theta_)*Math.sin(phi_),sy_*Math.sin(theta_)*Math.sin(phi_),sz_*Math.cos(phi_));
+	}	
 	public PointR3(PointR3 p){
 		this(p.x, p.y, p.z);
 	}
@@ -208,10 +211,9 @@ class Tetraedro {
 			this(new PointR3(pArr[0][0],pArr[1][0],pArr[2][0]), new PointR3(pArr[0][1],pArr[1][1],pArr[2][1]),
 				 new PointR3(pArr[0][2],pArr[1][2],pArr[2][2]), new PointR3(pArr[0][3],pArr[1][3],pArr[2][3]));
 		}
-		public PointR3 getFaceNormal(int nFace) {
-			if (nFace < 1 || nFace >4) return null;
-			PointR3 U = PointR3.getPointDiff(tFace[nFace-1].getArist(1).getEPoint(),tFace[nFace-1].getArist(1).getIPoint());
-			PointR3 V = PointR3.getPointDiff(tFace[nFace-1].getArist(2).getEPoint(),tFace[nFace-1].getArist(2).getIPoint());
+		public PointR3 getFaceNormal(int nCara) {
+			PointR3 U = PointR3.getPointDiff(tFace[nCara-1].getArist(1).getEPoint(),tFace[nCara-1].getArist(1).getIPoint());
+			PointR3 V = PointR3.getPointDiff(tFace[nCara-1].getArist(2).getEPoint(),tFace[nCara-1].getArist(2).getIPoint());
 			return PointR3.getProdVect(U,V);
 		}
 		public Triangulo getFace(int nFace){
@@ -304,10 +306,9 @@ class Cubo {
 				 new PointR3(pArr[0][4],pArr[1][4],pArr[2][4]), new PointR3(pArr[0][5],pArr[1][5],pArr[2][5]),
 				 new PointR3(pArr[0][6],pArr[1][6],pArr[2][6]), new PointR3(pArr[0][7],pArr[1][7],pArr[2][7]));
 		}
-		public PointR3 getFaceNormal(int nFace) {
-			if (nFace < 1 || nFace >6) return null;
-			PointR3 U = PointR3.getPointDiff(rFace[nFace-1].getArist(1).getEPoint(),rFace[nFace-1].getArist(1).getIPoint());
-			PointR3 V = PointR3.getPointDiff(rFace[nFace-1].getArist(2).getEPoint(),rFace[nFace-1].getArist(2).getIPoint());
+		public PointR3 getFaceNormal(int nCara) {
+			PointR3 U = PointR3.getPointDiff(rFace[nCara-1].getArist(1).getEPoint(),rFace[nCara-1].getArist(1).getIPoint());
+			PointR3 V = PointR3.getPointDiff(rFace[nCara-1].getArist(2).getEPoint(),rFace[nCara-1].getArist(2).getIPoint());
 			return PointR3.getProdVect(U,V);
 		}
 		public Rectangulo getFace(int nFace){
@@ -441,16 +442,14 @@ class Dodecaedro {
 				 new PointR3(escala*pArr[0][16],escala*pArr[1][16],escala*pArr[2][16]), new PointR3(escala*pArr[0][17],escala*pArr[1][17],escala*pArr[2][17]),
 				 new PointR3(escala*pArr[0][18],escala*pArr[1][18],escala*pArr[2][18]), new PointR3(escala*pArr[0][19],escala*pArr[1][19],escala*pArr[2][19]));
 		}		
-		public PointR3 getFaceNormal(int nFace) {
-			if (nFace < 1 || nFace >12) return null;
-			PointR3 U = PointR3.getPointDiff(pFace[nFace-1].getArist(1).getEPoint(),pFace[nFace-1].getArist(1).getIPoint());
-			PointR3 V = PointR3.getPointDiff(pFace[nFace-1].getArist(2).getEPoint(),pFace[nFace-1].getArist(2).getIPoint());
+		public PointR3 getFaceNormal(int nCara) {
+			PointR3 U = PointR3.getPointDiff(pFace[nCara-1].getArist(1).getEPoint(),pFace[nCara-1].getArist(1).getIPoint());
+			PointR3 V = PointR3.getPointDiff(pFace[nCara-1].getArist(2).getEPoint(),pFace[nCara-1].getArist(2).getIPoint());
 			return PointR3.getProdVect(U,V);
 		}
-		public PointR3 getFaceNormalVersor(int nFace) {
-			if (nFace < 1 || nFace >12) return null;
-			PointR3 U = getFace(nFace).getArist(1).getVersor();
-			PointR3 V = getFace(nFace).getArist(2).getVersor();
+		public PointR3 getFaceNormalVersor(int nCara) {
+			PointR3 U = getFace(nCara).getArist(1).getVersor();
+			PointR3 V = getFace(nCara).getArist(2).getVersor();
 			return PointR3.getProdVect(U,V);
 		}		
 		public Pentagono getFace(int nFace){
@@ -475,6 +474,7 @@ class Dodecaedro {
 		}		
 }
 
+/*
 class Sphere {
 	PointR3 center;
 	double radius;
@@ -493,12 +493,13 @@ class Sphere {
 		for (int i=0; i < vSteps; i++) {
 			for (int j=0; j < hSteps; j++) {
 				if (i==0) { // Head FAN
-					surface.add(new Triangulo(new PointR3(0,0,radius), PointR3.toCartesian(radius,hArcLen*j,vArcLen*(i+1)), PointR3.toCartesian(radius,hArcLen*(j+1),vArcLen*(i+1)), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
+					surface.add(new Triangulo(PointR3.getPointSum(center, new PointR3(0,0,radius)), PointR3.getPointSum(center, PointR3.toCartesian(radius,hArcLen*j,vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesian(radius,hArcLen*(j+1),vArcLen*(i+1))), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
 				} else if (i<(vSteps-1)) { // Body
-					surface.add(new Triangulo(PointR3.toCartesian(radius,hArcLen*j,vArcLen*i), PointR3.toCartesian(radius,hArcLen*j,vArcLen*(i+1)), PointR3.toCartesian(radius,hArcLen*(j+1),vArcLen*(i+1)), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
-					surface.add(new Triangulo(PointR3.toCartesian(radius,hArcLen*(j+1),vArcLen*(i+1)), PointR3.toCartesian(radius,hArcLen*(j+1),vArcLen*i), PointR3.toCartesian(radius,hArcLen*j,vArcLen*i), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
+					surface.add(new Triangulo(PointR3.getPointSum(center, PointR3.toCartesian(radius,hArcLen*j,vArcLen*i)), PointR3.getPointSum(center, PointR3.toCartesian(radius,hArcLen*j,vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesian(radius,hArcLen*(j+1),vArcLen*(i+1))), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
+					surface.add(new Triangulo(PointR3.getPointSum(center, PointR3.toCartesian(radius,hArcLen*(j+1),vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesian(radius,hArcLen*(j+1),vArcLen*i)), PointR3.getPointSum(center, PointR3.toCartesian(radius,hArcLen*j,vArcLen*i)), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
 				} else { // Foot FAN
-					surface.add(new Triangulo(PointR3.toCartesian(radius,hArcLen*j,vArcLen*i), PointR3.toCartesian(radius,hArcLen*j,vArcLen*(i+1)), PointR3.toCartesian(radius,hArcLen*(j+1),vArcLen*i), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
+					//surface.add(new Triangulo(PointR3.toCartesian(radius,hArcLen*j,vArcLen*i), new PointR3(0,0,-radius), new PointR3(radius,hArcLen*(j+1),vArcLen*i), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
+					surface.add(new Triangulo(PointR3.getPointSum(center, PointR3.toCartesian(radius,hArcLen*j,vArcLen*i)), PointR3.getPointSum(center, PointR3.toCartesian(radius,hArcLen*j,vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesian(radius,hArcLen*(j+1),vArcLen*i)), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
 				}					
 			}
 		}
@@ -513,4 +514,52 @@ class Sphere {
 		surface.set(iPos, t);
 	}
 }
-	
+*/
+
+class Elipsoide {
+	PointR3 center;
+	double radX, radY, radZ;
+	int vSteps,hSteps;
+	Random rand = new Random();
+	Color fillColor;
+	LinkedList<Triangulo> surface = new LinkedList<Triangulo>();
+	public Elipsoide(PointR3 pCenter, double dRx, double dRy, double dRz, int iVSteps, int iHSteps, Color fillColor_) {
+		center = pCenter;
+		radX = dRx;
+		radY = dRy;
+		radZ = dRz;
+		vSteps = iVSteps;
+		hSteps = iHSteps;
+		fillColor = fillColor_;
+		double vArcLen = Math.PI / vSteps;
+		double hArcLen = 2*Math.PI / hSteps;
+		for (int i=0; i < vSteps; i++) {
+			for (int j=0; j < hSteps; j++) {
+				if (i==0) { // Head FAN
+					surface.add(new Triangulo(PointR3.getPointSum(center, new PointR3(0,0,radZ)), PointR3.getPointSum(center, PointR3.toCartesian(radX, radY, radZ,hArcLen*j,vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesian(radX, radY, radZ, hArcLen*(j+1),vArcLen*(i+1))), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
+				} else if (i<(vSteps-1)) { // Body
+					surface.add(new Triangulo(PointR3.getPointSum(center, PointR3.toCartesian(radX, radY, radZ, hArcLen*j,vArcLen*i)), PointR3.getPointSum(center, PointR3.toCartesian(radX, radY, radZ, hArcLen*j,vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesian(radX, radY, radZ, hArcLen*(j+1),vArcLen*(i+1))), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
+					surface.add(new Triangulo(PointR3.getPointSum(center, PointR3.toCartesian(radX, radY, radZ, hArcLen*(j+1),vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesian(radX, radY, radZ, hArcLen*(j+1),vArcLen*i)), PointR3.getPointSum(center, PointR3.toCartesian(radX, radY, radZ, hArcLen*j,vArcLen*i)), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
+				} else { // Foot FAN
+					//surface.add(new Triangulo(PointR3.toCartesian(radius,hArcLen*j,vArcLen*i), new PointR3(0,0,-radius), new PointR3(radius,hArcLen*(j+1),vArcLen*i), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
+					surface.add(new Triangulo(PointR3.getPointSum(center, PointR3.toCartesian(radX, radY, radZ, hArcLen*j,vArcLen*i)), PointR3.getPointSum(center, PointR3.toCartesian(radX, radY, radZ, hArcLen*j,vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesian(radX, radY, radZ, hArcLen*(j+1),vArcLen*i)), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
+				}					
+			}
+		}
+	}
+	public int size() {
+		return surface.size();
+	}
+	public Triangulo getElem(int iPos) {
+		return surface.get(iPos);
+	}
+	public void setElem(int iPos, Triangulo t) {
+		surface.set(iPos, t);
+	}
+}
+
+class Esfera extends Elipsoide {
+	public Esfera(PointR3 pCenter, double dRadius, int iVSteps, int iHSteps, Color fillColor_) {
+		super(pCenter, dRadius, dRadius, dRadius, iVSteps, iHSteps, fillColor_);
+	}
+}

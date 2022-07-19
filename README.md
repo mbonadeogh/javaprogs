@@ -13,6 +13,7 @@ PointR3 	: Clase que representa un punto en el espacio
 				public PointR3(double[][] pArr): Input: Array con las 3 coordenadas cartesianas.
 			Metodos:
 				public static PointR3 toCartesian(double rho_, double theta_, double phi_): Input: Coordenadas esfericas. Output: Un punto PointR3.
+				public static PointR3 toCartesian(double sx_, double sy_, double sz_, double theta_, double phi_) : Input: Coordenadas elipsoidales. Output: Un punto PointR3.
 				public static final PointR3 getPointDiff(PointR3 pEnd, PointR3 pIni): Input: 2 objetos PointR3, Output: Un PointR3 que representa la diferencia (pEnd-Pini).
 				public static final PointR3 getPointSum(PointR3 pIni, PointR3 pEnd): Input: 2 objetos PointR3, Output: Un PointR3 que representa la suma (pIni+PFin).
 				public static final PointR3 getPointAvg(PointR3 pIni, PointR3 pEnd): Input: 2 objetos PointR3, Output: Un PointR3 que representa el promedio (pIni+PFin)/2.
@@ -63,7 +64,9 @@ Pentagono: // A describir
 
 Dodecaedro: // A describir
 
-Sphere: // A describir
+Elipsoide: // A describir
+
+Esfera: // deriva de Elipsoide
 
 Perspectiva.java : Clase que extiende de Forma y tiene las matrices de transformación y los métodos para proyectar un punto del espacio sobre el plano, así como tambien las matrices de rotación unitarias alrrededor de los ejes coordenados.
 // A describir

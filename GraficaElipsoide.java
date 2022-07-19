@@ -33,15 +33,15 @@ import java.util.LinkedList;
 import javax.swing.JFrame;
 import javax.swing.JComponent;
 
-public class GraficaEsfera extends Perspectiva {
+public class GraficaElipsoide extends Perspectiva {
 	private Color drawColor;
 
-	public GraficaEsfera () {
+	public GraficaElipsoide () {
 		super();
 	}
 	
 	// pobs: Punto de vista del observador, DP_: Distancia al plano de proyección
-	public GraficaEsfera (PointR3 pobs, double DP_) {
+	public GraficaElipsoide (PointR3 pobs, double DP_) {
 		super(pobs, DP_);
 	}
 
@@ -257,7 +257,7 @@ public class GraficaEsfera extends Perspectiva {
 					System.out.println(""+dLX+"|"+dLY+"|"+dLZ);		
 					continue;
 				}				
-				System.out.println("Uso: java -cp <classpath> GraficaEsfera [-t{0|1|2]}] [-pPosX~PosY~PosZ~DistPlanoProy] [-l[PosX~PosY~PosZ]]");
+				System.out.println("Uso: java -cp <classpath> GraficaElipsoide [-t{0|1|2]}] [-pPosX~PosY~PosZ~DistPlanoProy] [-l[PosX~PosY~PosZ]]");
 				System.out.println("Donde:");
 				System.out.println("  -t : 0.Caras a Color, 1.Solo aristas visibles, 2.Transparente (todas las aristas visibles)");
 				System.out.println("  -p : (PosX,PosY,PosZ)-Punto de vista del Observador, DistPlanoProy: Distancia al plano de Proyección");
@@ -266,10 +266,10 @@ public class GraficaEsfera extends Perspectiva {
 			}			
 		}		
 		JFrame testFrame = new JFrame();
-		testFrame.setTitle("Esfera rotando proyectada..."+(typeView==0?"con caras pintadas":(typeView==1?"Solo aristas de caras visibles":"Solo esqueleto")));
+		testFrame.setTitle("Elipsoide rotando proyectada..."+(typeView==0?"con caras pintadas":(typeView==1?"Solo aristas de caras visibles":"Solo esqueleto")));
 		testFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		PointR3 PVO = new PointR3(dPX,dPY,dPZ);
-		GraficaEsfera comp = new GraficaEsfera(PVO, dDist); //testFrame.add(comp);
+		GraficaElipsoide comp = new GraficaElipsoide(PVO, dDist); //testFrame.add(comp);
 		PointR3 PVL = new PointR3(dLX,dLY,dLZ); // Punto donde esta la fuente de luz...
 		System.out.println("PO X: "+comp.POX1+", PO Y: "+comp.POX2+", PO Z: "+comp.POX3);
 		comp.setOrigen(683, 384);
@@ -288,12 +288,9 @@ public class GraficaEsfera extends Perspectiva {
 		int XO = (int)comp.projectedPoint(AX1.getIPoint()).getX(), YO = (int)comp.projectedPoint(AX1.getIPoint()).getY();
 		//PointR3 PVO = new PointR3(comp.POX1, comp.POX2, comp.POX3);
 
-		Esfera myEsfera = new Esfera(new PointR3(0.0,0.0,0.0), 10.0, 14, 28, null /*Color.LIGHT_GRAY*/);
+		// Define ELIPSOIDE *************************************
+		Elipsoide myElipsoide = new Elipsoide(new PointR3(0.0,0.0,0.0), 4.0, 8.0, 12.0, 14, 28, null /*Color.LIGHT_GRAY*/);
 		int nShapes;
-
-		//double trasladoEsfera[][]={{1,0,0,5.0},{0,1,0,5.0},{0,0,1,5.0},{0,0,0,1}};
-		//myEsfera = new mySphere((new matrix()).producto(trasladoEsfera,myEsfera.getHArr());
-		//myEsfera.move(trasladoEsfera);
 		
 		if (typeView == 0) comp.setDrawColor(Color.BLACK);
 	
@@ -306,9 +303,9 @@ public class GraficaEsfera extends Perspectiva {
 			LinkedList<Shape> X1_lineaDelayed = new LinkedList<Shape>(), X2_lineaDelayed = new LinkedList<Shape>(), X3_lineaDelayed = new LinkedList<Shape>();
 			
 			Triangulo currTriang;
-			System.out.println("myEsfera.size()="+myEsfera.size());
-			for (int j=0; j < myEsfera.size(); j++) {
-				currTriang = myEsfera.getElem(j);	
+			System.out.println("myElipsoide.size()="+myElipsoide.size());
+			for (int j=0; j < myElipsoide.size(); j++) {
+				currTriang = myElipsoide.getElem(j);	
 				if (currTriang.esVisible(PVO) || typeView == 2) {
 					if (typeView == 0) {
 						double NS = (new matrix()).prod_escalar(currTriang.getPoint(1).getArr(), currTriang.getNormal().getArr());
@@ -402,8 +399,8 @@ public class GraficaEsfera extends Perspectiva {
 				Thread.currentThread().interrupt();
 			}
 
-			for (int k=0; k < myEsfera.size(); k++) {
-				currTriang = myEsfera.getElem(k);
+			for (int k=0; k < myElipsoide.size(); k++) {
+				currTriang = myElipsoide.getElem(k);
 				if (i < 360) {
 					VC = (new matrix()).producto((new matrix()).potencia(comp.rotEjeX1,1), currTriang.getHArr());
 				} else if (i < 720) {
@@ -416,7 +413,7 @@ public class GraficaEsfera extends Perspectiva {
 						VC = (new matrix()).producto((new matrix()).potencia(comp.rotEjeX2,sentido*(int)Math.abs(3*Math.cos(2*comp.grado*i))), VC); 
 						VC = (new matrix()).producto((new matrix()).potencia(comp.rotEjeX3,sentido*(int)Math.abs(2*Math.sin(3*comp.grado*i))), VC); 
 				}			
-				myEsfera.setElem(k, new Triangulo(VC,currTriang.getFillColor()));
+				myElipsoide.setElem(k, new Triangulo(VC,currTriang.getFillColor()));
 			}			
 			comp.clearLastNShapes(nShapes);
 		}
