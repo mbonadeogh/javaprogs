@@ -42,15 +42,15 @@ class PointR3 {
 		//theta = Math.acos(x/(rho*Math.sin(phi)));
 		theta = (y>0?Math.acos(x/(rho*Math.sin(phi))):(x<0?(Math.PI-Math.asin(y/(rho*Math.sin(phi)))):Math.asin(y/(rho*Math.sin(phi)))));
 	}
-	public static PointR3 toCartesian(double rho_, double theta_, double phi_){
-		return new PointR3(rho_*Math.cos(theta_)*Math.sin(phi_),rho_*Math.sin(theta_)*Math.sin(phi_),rho_*Math.cos(phi_));
-	}
-	public static PointR3 toCartesianFromCil(double rho_, double theta_, double z_){
-		return new PointR3(rho_*Math.cos(theta_),rho_*Math.sin(theta_),z_);
-	}
-	public static PointR3 toCartesian(double sx_, double sy_, double sz_, double theta_, double phi_){
+	public static PointR3 toCartesian(double sx_, double sy_, double sz_, double theta_, double phi_){ // Elipsoidales a Cartesianas
 		return new PointR3(sx_*Math.cos(theta_)*Math.sin(phi_),sy_*Math.sin(theta_)*Math.sin(phi_),sz_*Math.cos(phi_));
 	}	
+	public static PointR3 toCartesian(double rho_, double theta_, double phi_){ // Esfericas a Cartesianas
+		return new PointR3(rho_*Math.cos(theta_)*Math.sin(phi_),rho_*Math.sin(theta_)*Math.sin(phi_),rho_*Math.cos(phi_));
+	}
+	public static PointR3 toCartesianFromCil(double rho_, double theta_, double z_){ // Cilindricas a Cartesianas
+		return new PointR3(rho_*Math.cos(theta_),rho_*Math.sin(theta_),z_);
+	}
 	public PointR3(PointR3 p){
 		this(p.x, p.y, p.z);
 	}
@@ -541,7 +541,6 @@ class Elipsoide {
 					surface.add(new Triangulo(PointR3.getPointSum(center, PointR3.toCartesian(radX, radY, radZ, hArcLen*j,vArcLen*i)), PointR3.getPointSum(center, PointR3.toCartesian(radX, radY, radZ, hArcLen*j,vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesian(radX, radY, radZ, hArcLen*(j+1),vArcLen*(i+1))), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
 					surface.add(new Triangulo(PointR3.getPointSum(center, PointR3.toCartesian(radX, radY, radZ, hArcLen*(j+1),vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesian(radX, radY, radZ, hArcLen*(j+1),vArcLen*i)), PointR3.getPointSum(center, PointR3.toCartesian(radX, radY, radZ, hArcLen*j,vArcLen*i)), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
 				} else { // Foot FAN
-					//surface.add(new Triangulo(PointR3.toCartesian(radius,hArcLen*j,vArcLen*i), new PointR3(0,0,-radius), new PointR3(radius,hArcLen*(j+1),vArcLen*i), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
 					surface.add(new Triangulo(PointR3.getPointSum(center, PointR3.toCartesian(radX, radY, radZ, hArcLen*j,vArcLen*i)), PointR3.getPointSum(center, PointR3.toCartesian(radX, radY, radZ, hArcLen*j,vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesian(radX, radY, radZ, hArcLen*(j+1),vArcLen*i)), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
 				}					
 			}

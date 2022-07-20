@@ -289,7 +289,7 @@ public class GraficaElipsoide extends Perspectiva {
 		//PointR3 PVO = new PointR3(comp.POX1, comp.POX2, comp.POX3);
 
 		// Define ELIPSOIDE *************************************
-		Elipsoide myElipsoide = new Elipsoide(new PointR3(0.0,0.0,0.0), 4.0, 8.0, 12.0, 14, 28, null /*Color.LIGHT_GRAY*/);
+		Elipsoide myElipsoide = new Elipsoide(new PointR3(0.0,0.0,0.0), 7.0, 17.0, 7.0, 14, 28, null /*Color.DARK_GRAY*/);
 		int nShapes;
 		
 		if (typeView == 0) comp.setDrawColor(Color.BLACK);
