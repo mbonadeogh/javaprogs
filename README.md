@@ -13,7 +13,17 @@ PointR3 	: Clase que representa un punto en el espacio
 				public PointR3(double[][] pArr): Input: Array con las 3 coordenadas cartesianas.
 			Metodos:
 				public static PointR3 toCartesian(double rho_, double theta_, double phi_): Input: Coordenadas esfericas. Output: Un punto PointR3.
+					Parametros:
+					rho_: Radio o segmento que representa la distancia entre el centro y la superficie de la esfera. Valor constante.
+					theta_: Angulo polar o colatitud (varia entre 0 y Pi), avanza desde el polo norte al sur, describiendo meridianos como lineas coordenaddas.
+					phi_: Angulo Azimutal (varia entre 0 y 2*Pi), describiendo paralelos como líneas coordenadas.
 				public static PointR3 toCartesian(double sx_, double sy_, double sz_, double theta_, double phi_) : Input: Coordenadas elipsoidales. Output: Un punto PointR3.
+					Parametros:
+					sx_: Segmento que representa la distancia entre el centro y la superficie de la elipse en la direccion del eje X. Valor constante.
+					sy_: Segmento que representa la distancia entre el centro y la superficie de la elipse en la direccion del eje Y. Valor constante.
+					sz_: Segmento que representa la distancia entre el centro y la superficie de la elipse en la direccion del eje Z. Valor constante.
+					theta_: Angulo polar o colatitud (varia entre 0 y Pi), avanza desde el polo norte al sur, describiendo meridianos como lineas coordenaddas.
+					phi_: Angulo Azimutal (varia entre 0 y 2*Pi), describiendo paralelos como líneas coordenadas.				
 				public static final PointR3 getPointDiff(PointR3 pEnd, PointR3 pIni): Input: 2 objetos PointR3, Output: Un PointR3 que representa la diferencia (pEnd-Pini).
 				public static final PointR3 getPointSum(PointR3 pIni, PointR3 pEnd): Input: 2 objetos PointR3, Output: Un PointR3 que representa la suma (pIni+PFin).
 				public static final PointR3 getPointAvg(PointR3 pIni, PointR3 pEnd): Input: 2 objetos PointR3, Output: Un PointR3 que representa el promedio (pIni+PFin)/2.
