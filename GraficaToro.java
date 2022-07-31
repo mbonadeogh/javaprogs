@@ -29,19 +29,20 @@ import java.awt.Point;
 import java.awt.Polygon;
 
 import java.util.LinkedList;
+import java.util.Collections;
 
 import javax.swing.JFrame;
 import javax.swing.JComponent;
 
-public class GraficaElipsoide extends Perspectiva {
+public class GraficaToro extends Perspectiva {
 	private Color drawColor;
 
-	public GraficaElipsoide () {
+	public GraficaToro () {
 		super();
 	}
 	
 	// pobs: Punto de vista del observador, DP_: Distancia al plano de proyección
-	public GraficaElipsoide (PointR3 pobs, double DP_) {
+	public GraficaToro (PointR3 pobs, double DP_) {
 		super(pobs, DP_);
 	}
 
@@ -104,15 +105,6 @@ public class GraficaElipsoide extends Perspectiva {
 			this.fillColor = fillColor;
 		}
 		
-/*		public int getXCoordPoint(int nPoint) {
-			if (nPoint < 1 || nPoint >5) return -10000000;
-			return xpoints[nPoint-1];
-		}
-		
-		public int getYCoordPoint(int nPoint) {
-			if (nPoint < 1 || nPoint >5) return -10000000;
-			return ypoints[nPoint-1];
-		}*/		
 	}	
 
 	// *** Lista encadenada de formas, a mantener, para la presentación de toda la información a graficar.
@@ -245,7 +237,7 @@ public class GraficaElipsoide extends Perspectiva {
 					System.out.println(""+dPX+"|"+dPY+"|"+dPZ+"|"+dDist);		
 					continue;
 				}
-				System.out.println("Uso: java -cp <classpath> GraficaElipsoide [-t{0|1|2]}] [-pPosX~PosY~PosZ~DistPlanoProy]");
+				System.out.println("Uso: java -cp <classpath> GraficaToro [-t{0|1|2]}] [-pPosX~PosY~PosZ~DistPlanoProy]");
 				System.out.println("Donde:");
 				System.out.println("  -t : 0.Caras a Color, 1.Solo aristas visibles, 2.Transparente (todas las aristas visibles)");
 				System.out.println("  -p : (PosX,PosY,PosZ)-Punto de vista del Observador, DistPlanoProy: Distancia al plano de Proyección");
@@ -253,10 +245,10 @@ public class GraficaElipsoide extends Perspectiva {
 			}			
 		}		
 		JFrame testFrame = new JFrame();
-		testFrame.setTitle("Elipsoide rotando proyectada..."+(typeView==0?"con caras pintadas":(typeView==1?"Solo aristas de caras visibles":"Solo esqueleto")));
+		testFrame.setTitle("Toro rotando proyectada..."+(typeView==0?"con caras pintadas":(typeView==1?"Solo aristas de caras visibles":"Solo esqueleto")));
 		testFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		PointR3 PVO = new PointR3(dPX,dPY,dPZ);
-		GraficaElipsoide comp = new GraficaElipsoide(PVO, dDist); //testFrame.add(comp);
+		GraficaToro comp = new GraficaToro(PVO, dDist); //testFrame.add(comp);
 		System.out.println("PO X: "+comp.POX1+", PO Y: "+comp.POX2+", PO Z: "+comp.POX3);
 		comp.setOrigen(683, 384);
 		comp.setPreferredSize(new Dimension(comp.origenX*2, comp.origenY*2));
@@ -274,8 +266,8 @@ public class GraficaElipsoide extends Perspectiva {
 		int XO = (int)comp.projectedPoint(AX1.getIPoint()).getX(), YO = (int)comp.projectedPoint(AX1.getIPoint()).getY();
 		//PointR3 PVO = new PointR3(comp.POX1, comp.POX2, comp.POX3);
 
-		// Define ELIPSOIDE *************************************
-		Elipsoide myElipsoide = new Elipsoide(new PointR3(0.0,0.0,0.0), 7.0, 17.0, 7.0, 17, 28, null /*Color.DARK_GRAY*/);
+		// Define Toro *************************************
+		Toro myToro = new Toro(new PointR3(0.0,0.0,0.0), 10.0, 4.0, 14, 26, null /*Color.DARK_GRAY*/);
 		int nShapes;
 		
 		if (typeView == 0) comp.setDrawColor(Color.BLACK);
@@ -283,16 +275,28 @@ public class GraficaElipsoide extends Perspectiva {
 		double VC[][], rL[] = null;
 		boolean bSHX1, bSHX2, bSHX3;
 		for (int i=0; i < 14400; i++) {
-			nShapes = 0; // Cantidad de formas del dodecaedro dibujadas.
-			bSHX1 = bSHX2 = bSHX3 = true; // Repinta el eje (salvo que haya cortado una cara de la figura, o sea tapada por esta).
+			nShapes = 0; // Cantidad de formas -triangulos, lineas, etc.- del Toro dibujadas.
+			bSHX1 = bSHX2 = bSHX3 = true; // Repinta el eje (salvo que haya cortado una cara de la figura, o sea tapada por esta)...A mejorar.
 			// Fragmentos de ejes de coordenadas que cortan cara/s a presentar al final, si fuera necesario, para evitar pisarlo por la presentacion de otra cara.
 			LinkedList<Shape> X1_lineaDelayed = new LinkedList<Shape>(), X2_lineaDelayed = new LinkedList<Shape>(), X3_lineaDelayed = new LinkedList<Shape>();
-			
+			// Lista de triangulos "potencialmente visibles" en este loop.
+			LinkedList<Triangulo> supVisible = new LinkedList<Triangulo>();
+
 			Triangulo currTriang;
-			System.out.println("myElipsoide.size()="+myElipsoide.size());
-			for (int j=0; j < myElipsoide.size(); j++) {
-				currTriang = myElipsoide.getElem(j);	
-				if (currTriang.esVisible(PVO) || typeView == 2) {
+			System.out.println("myToro.size()="+myToro.size());
+			for (int j=0; j < myToro.size(); j++) {
+				currTriang = myToro.getElem(j);	
+				if (typeView == 2) {
+					nShapes+=comp.addShapes(currTriang);
+				} else if (currTriang.esVisible(PVO)) {
+					supVisible.add(currTriang);
+				}
+			}
+			if (typeView != 2) {
+				Collections.sort(supVisible); //Ordena los triangulos "potencialmente visibles" de los mas lejanos a los mas cercanos al Punto de Vista del Observador.
+				System.out.println("Nro.de Triangulos potencialmente visibles="+supVisible.size());
+				for (int j=0; j < supVisible.size(); j++) {
+					currTriang = supVisible.get(j);			
 					if (typeView == 0) {
 						double NS = (new matrix()).prod_escalar(currTriang.getPoint(1).getArr(), currTriang.getNormal().getArr());
 						double DSX1 = (new matrix()).prod_escalar(new double [][]{{1.0},{0.0},{0.0}}, currTriang.getNormal().getArr());
@@ -314,9 +318,9 @@ public class GraficaElipsoide extends Perspectiva {
 							comp.addShape((int)pProyCX1.getX()-2, (int)pProyCX1.getY()+2, (int)pProyCX1.getX()+2, (int)pProyCX1.getY()-2, Color.BLACK);
 							nShapes+=2;
 							if (DSX1 > 0) { // Guarda fragmento de recta desde intersección de cara con eje X en adelante, para mostrar despues.
-						        X1_lineaDelayed.add(new Line((int)pProyCX1.getX(), (int)pProyCX1.getY(), (int)comp.projectedPoint(AX1.getEPoint()).getX(), (int)comp.projectedPoint(AX1.getEPoint()).getY(), Color.RED));	
+								X1_lineaDelayed.add(new Line((int)pProyCX1.getX(), (int)pProyCX1.getY(), (int)comp.projectedPoint(AX1.getEPoint()).getX(), (int)comp.projectedPoint(AX1.getEPoint()).getY(), Color.RED));	
 							} else { // Guarda fragmento de recta desde origen a intersección de cara con eje X, para mostrar despues.
-						        X1_lineaDelayed.add(new Line(XO, YO, (int)pProyCX1.getX(), (int)pProyCX1.getY(), Color.RED));	
+								X1_lineaDelayed.add(new Line(XO, YO, (int)pProyCX1.getX(), (int)pProyCX1.getY(), Color.RED));	
 							} 
 							bSHX1 = false;
 							System.out.println("(S"+j+")Pone bSHX1 a false 1");
@@ -327,10 +331,10 @@ public class GraficaElipsoide extends Perspectiva {
 							comp.addShape((int)pProyCX2.getX()-2, (int)pProyCX2.getY()+2, (int)pProyCX2.getX()+2, (int)pProyCX2.getY()-2, Color.BLACK);
 							nShapes+=2;
 							if (DSX2 > 0) {
-						        X2_lineaDelayed.add(new Line((int)pProyCX2.getX(), (int)pProyCX2.getY(), (int)comp.projectedPoint(AX2.getEPoint()).getX(), (int)comp.projectedPoint(AX2.getEPoint()).getY(), Color.GREEN));
+								X2_lineaDelayed.add(new Line((int)pProyCX2.getX(), (int)pProyCX2.getY(), (int)comp.projectedPoint(AX2.getEPoint()).getX(), (int)comp.projectedPoint(AX2.getEPoint()).getY(), Color.GREEN));
 								
 							} else {
-						        X2_lineaDelayed.add(new Line(XO, YO, (int)pProyCX2.getX(), (int)pProyCX2.getY(), Color.GREEN));	
+								X2_lineaDelayed.add(new Line(XO, YO, (int)pProyCX2.getX(), (int)pProyCX2.getY(), Color.GREEN));	
 							} 
 							bSHX2 = false;
 							System.out.println("(S"+j+")Pone bSHX2 a false 1");
@@ -341,23 +345,17 @@ public class GraficaElipsoide extends Perspectiva {
 							comp.addShape((int)pProyCX3.getX()-2, (int)pProyCX3.getY()+2, (int)pProyCX3.getX()+2, (int)pProyCX3.getY()-2, Color.BLACK);
 							nShapes+=2;
 							if (DSX3 > 0) {
-						        X3_lineaDelayed.add(new Line((int)pProyCX3.getX(), (int)pProyCX3.getY(), (int)comp.projectedPoint(AX3.getEPoint()).getX(), (int)comp.projectedPoint(AX3.getEPoint()).getY(), Color.BLUE));
+								X3_lineaDelayed.add(new Line((int)pProyCX3.getX(), (int)pProyCX3.getY(), (int)comp.projectedPoint(AX3.getEPoint()).getX(), (int)comp.projectedPoint(AX3.getEPoint()).getY(), Color.BLUE));
 								
 							} else {
-						        X3_lineaDelayed.add(new Line(XO, YO, (int)pProyCX3.getX(), (int)pProyCX3.getY(), Color.BLUE));	
+								X3_lineaDelayed.add(new Line(XO, YO, (int)pProyCX3.getX(), (int)pProyCX3.getY(), Color.BLUE));	
 							} 
 							bSHX3 = false;
 							System.out.println("(S"+j+")Pone bSHX3 a false 1");
 						}						
 					}	
 					nShapes+=comp.addShapes(currTriang);
-				}
-				/*comp.repaint();
-				try{
-					Thread.sleep(100);
-				}catch(InterruptedException ex){
-					Thread.currentThread().interrupt();
-				}*/			
+				}	
 			}
 			
 		    if (bSHX1) {
@@ -385,8 +383,8 @@ public class GraficaElipsoide extends Perspectiva {
 				Thread.currentThread().interrupt();
 			}
 
-			for (int k=0; k < myElipsoide.size(); k++) {
-				currTriang = myElipsoide.getElem(k);
+			for (int k=0; k < myToro.size(); k++) {
+				currTriang = myToro.getElem(k);
 				if (i < 360) {
 					VC = (new matrix()).producto((new matrix()).potencia(comp.rotEjeX1,1), currTriang.getHArr());
 				} else if (i < 720) {
@@ -399,7 +397,7 @@ public class GraficaElipsoide extends Perspectiva {
 						VC = (new matrix()).producto((new matrix()).potencia(comp.rotEjeX2,sentido*(int)Math.abs(3*Math.cos(2*comp.grado*i))), VC); 
 						VC = (new matrix()).producto((new matrix()).potencia(comp.rotEjeX3,sentido*(int)Math.abs(2*Math.sin(3*comp.grado*i))), VC); 
 				}			
-				myElipsoide.setElem(k, new Triangulo(VC,currTriang.getFillColor()));
+				myToro.setElem(k, new Triangulo(VC,currTriang.getFillColor()));
 			}			
 			comp.clearLastNShapes(nShapes);
 		}

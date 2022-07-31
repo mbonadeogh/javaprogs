@@ -25,6 +25,7 @@ import javax.swing.JComponent;
 import java.util.LinkedList;
 import java.awt.Color;
 import java.util.Random;
+import java.util.Collections;
 
 public class Forma extends JComponent /*JPanel*/ {
 	static double PA = (Math.sqrt(5.0)+1.0)/2.0;	// Proporcion aurea.
@@ -48,6 +49,9 @@ class PointR3 {
 	public static PointR3 toCartesian(double rho_, double theta_, double phi_){ // Esfericas a Cartesianas
 		return new PointR3(rho_*Math.cos(theta_)*Math.sin(phi_),rho_*Math.sin(theta_)*Math.sin(phi_),rho_*Math.cos(phi_));
 	}
+	public static PointR3 toCartesian(double R_, double r_, double theta_, double phi_){ // Toro a Cartesianas
+		return new PointR3(Math.cos(theta_)*(R_+r_*Math.cos(phi_)),Math.sin(theta_)*(R_+r_*Math.cos(phi_)),r_*Math.sin(phi_));
+	}	
 	public static PointR3 toCartesianFromCil(double rho_, double theta_, double z_){ // Cilindricas a Cartesianas
 		return new PointR3(rho_*Math.cos(theta_),rho_*Math.sin(theta_),z_);
 	}
@@ -124,10 +128,11 @@ class AristR3 {
 	}
 }
 
-class Triangulo {
+class Triangulo implements Comparable<Triangulo> {
 		AristR3 aR3[]= new AristR3[3];
 		PointR3 pR3[]= new PointR3[3];
 		Color fillColor = Color.GRAY, borderColor = Color.BLACK;
+		double distPVO = -1.0;
 		
 		public Triangulo(AristR3 a1_, AristR3 a2_, AristR3 a3_) {
 			aR3[0] = a1_;
@@ -162,6 +167,7 @@ class Triangulo {
 			return PointR3.getProdVect(U,V);
 		}		
 		public boolean esVisible(PointR3 PVO) {
+			distPVO = new AristR3(pR3[0], PVO).getLength();
 			return ((new matrix()).prod_escalar(PointR3.getPointDiff(PVO, pR3[0]).getArr(), getNormal().getArr())>0?true:false);
 		}
 		public PointR3[] getPointR3Arr() {
@@ -188,6 +194,19 @@ class Triangulo {
 		public Color getBorderColor() {
 			return borderColor;
 		}
+    // Override the compareTo() method
+    @Override public int compareTo(Triangulo t)
+    {
+        if (distPVO > t.distPVO) {
+            return -1;
+        }
+        else if (distPVO == t.distPVO) {
+            return 0;
+        }
+        else {
+            return 1;
+        }
+    }		
 }
 
 class Tetraedro {
@@ -560,5 +579,39 @@ class Elipsoide {
 class Esfera extends Elipsoide {
 	public Esfera(PointR3 pCenter, double dRadius, int iVSteps, int iHSteps, Color fillColor_) {
 		super(pCenter, dRadius, dRadius, dRadius, iVSteps, iHSteps, fillColor_);
+	}
+}
+
+class Toro {
+	PointR3 center;
+	double radMayor, radMenor;
+	int vSteps,hSteps;
+	Random rand = new Random();
+	Color fillColor;
+	LinkedList<Triangulo> surface = new LinkedList<Triangulo>();
+	public Toro(PointR3 pCenter, double dR, double dr, int iVSteps, int iHSteps, Color fillColor_) {
+		center = pCenter;
+		radMayor = dR;
+		radMenor = dr;
+		vSteps = iVSteps;
+		hSteps = iHSteps;
+		fillColor = fillColor_;
+		double vArcLen = 2*Math.PI / vSteps;
+		double hArcLen = 2*Math.PI / hSteps;
+		for (int i=0; i < vSteps; i++) {
+			for (int j=0; j < hSteps; j++) {
+				surface.add(new Triangulo(PointR3.getPointSum(center, PointR3.toCartesian(radMayor, radMenor, hArcLen*j,vArcLen*i)), PointR3.getPointSum(center, PointR3.toCartesian(radMayor, radMenor, hArcLen*(j+1),vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesian(radMayor, radMenor, hArcLen*j,vArcLen*(i+1))), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
+				surface.add(new Triangulo(PointR3.getPointSum(center, PointR3.toCartesian(radMayor, radMenor, hArcLen*(j+1),vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesian(radMayor, radMenor, hArcLen*j,vArcLen*i)), PointR3.getPointSum(center, PointR3.toCartesian(radMayor, radMenor, hArcLen*(j+1),vArcLen*i)), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
+			}
+		}
+	}
+	public int size() {
+		return surface.size();
+	}
+	public Triangulo getElem(int iPos) {
+		return surface.get(iPos);
+	}
+	public void setElem(int iPos, Triangulo t) {
+		surface.set(iPos, t);
 	}
 }

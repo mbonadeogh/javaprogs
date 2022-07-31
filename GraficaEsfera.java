@@ -230,7 +230,6 @@ public class GraficaEsfera extends Perspectiva {
 		boolean giraPVO = false, ligthSource = false;
 		int velocidadPVO = 10;
 		double dPX = 60.0, dPY = 34.641, dPZ = 40.0, dDist = 1500.0;
-		double dLX = 0.0, dLY = 100.0, dLZ = 0.0;
 		if (args.length!=0) {
 			for (String str: args) {
 				if (str.indexOf("-t")!=-1) {
@@ -246,22 +245,10 @@ public class GraficaEsfera extends Perspectiva {
 					System.out.println(""+dPX+"|"+dPY+"|"+dPZ+"|"+dDist);		
 					continue;
 				}
-				if (str.indexOf("-l")!=-1) {
-					ligthSource = true;
-					String[] strArray = str.substring(2).split("~");
-					if (strArray.length == 3) {
-						dLX = Double.parseDouble(strArray[0]);
-						dLY = Double.parseDouble(strArray[1]);
-						dLZ = Double.parseDouble(strArray[2]);
-					}
-					System.out.println(""+dLX+"|"+dLY+"|"+dLZ);		
-					continue;
-				}				
-				System.out.println("Uso: java -cp <classpath> GraficaEsfera [-t{0|1|2]}] [-pPosX~PosY~PosZ~DistPlanoProy] [-l[PosX~PosY~PosZ]]");
+				System.out.println("Uso: java -cp <classpath> GraficaEsfera [-t{0|1|2]}] [-pPosX~PosY~PosZ~DistPlanoProy]");
 				System.out.println("Donde:");
 				System.out.println("  -t : 0.Caras a Color, 1.Solo aristas visibles, 2.Transparente (todas las aristas visibles)");
 				System.out.println("  -p : (PosX,PosY,PosZ)-Punto de vista del Observador, DistPlanoProy: Distancia al plano de Proyección");
-				System.out.println("  -l : (PosX,PosY,PosZ)-Punto de fuente de luz...");
 				return;
 			}			
 		}		
@@ -270,7 +257,6 @@ public class GraficaEsfera extends Perspectiva {
 		testFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		PointR3 PVO = new PointR3(dPX,dPY,dPZ);
 		GraficaEsfera comp = new GraficaEsfera(PVO, dDist); //testFrame.add(comp);
-		PointR3 PVL = new PointR3(dLX,dLY,dLZ); // Punto donde esta la fuente de luz...
 		System.out.println("PO X: "+comp.POX1+", PO Y: "+comp.POX2+", PO Z: "+comp.POX3);
 		comp.setOrigen(683, 384);
 		comp.setPreferredSize(new Dimension(comp.origenX*2, comp.origenY*2));
