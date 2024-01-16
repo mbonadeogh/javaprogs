@@ -31,6 +31,7 @@ import java.awt.Polygon;
 import java.util.LinkedList;
 import java.util.Collections;
 
+//import java.awt.GraphicsEnvironment;
 import javax.swing.JFrame;
 import javax.swing.JComponent;
 
@@ -237,7 +238,7 @@ public class GraficaToro extends Perspectiva {
 					System.out.println(""+dPX+"|"+dPY+"|"+dPZ+"|"+dDist);		
 					continue;
 				}
-				System.out.println("Uso: java -cp <classpath> GraficaToro [-t{0|1|2]}] [-pPosX~PosY~PosZ~DistPlanoProy]");
+				System.out.println("Uso: java -cp <classpath> GraficaToro [-t{0|1|2}] [-pPosX~PosY~PosZ~DistPlanoProy]");
 				System.out.println("Donde:");
 				System.out.println("  -t : 0.Caras a Color, 1.Solo aristas visibles, 2.Transparente (todas las aristas visibles)");
 				System.out.println("  -p : (PosX,PosY,PosZ)-Punto de vista del Observador, DistPlanoProy: Distancia al plano de Proyección");
@@ -267,7 +268,7 @@ public class GraficaToro extends Perspectiva {
 		//PointR3 PVO = new PointR3(comp.POX1, comp.POX2, comp.POX3);
 
 		// Define Toro *************************************
-		Toro myToro = new Toro(new PointR3(0.0,0.0,0.0), 10.0, 4.0, 14, 26, null /*Color.DARK_GRAY*/);
+		Toro myToro = new Toro(new PointR3(0.0,0.0,0.0), 10.0, 4.5, 14, 26, null /*Color.DARK_GRAY*/);
 		int nShapes;
 		
 		if (typeView == 0) comp.setDrawColor(Color.BLACK);
@@ -311,7 +312,7 @@ public class GraficaToro extends Perspectiva {
 						comp.addShape(currTriang, currTriang.getFillColor());
 						nShapes+=1;	
 						Polygon POL = (Polygon)comp.getLastShape();
-						if (((int)DSX1) != 0 && POL.getBounds2D().contains(pProyCX1.getX(),pProyCX1.getY()) && pCX1.getX() > 0) { // Eje X cortando Triangulo j
+						if (((int)DSX1) != 0 && (POL.getBounds2D().contains(pProyCX1.getX(),pProyCX1.getY()) || currTriang.esPuntoInterior(pCX1)) && pCX1.getX() > 0) { // Eje X cortando Triangulo j
 							System.out.println("(S"+j+")### - pProyCX1.getX(): "+pProyCX1.getX()+", pProyCX1.getY(): "+pProyCX1.getY()+"------pCX1.getX(): "+pCX1.getX());
 							// Muestra punto de corte de la superficie con el eje X con una pequeña cruz.
 							comp.addShape((int)pProyCX1.getX()-2, (int)pProyCX1.getY()-2, (int)pProyCX1.getX()+2, (int)pProyCX1.getY()+2, Color.BLACK);
@@ -324,8 +325,26 @@ public class GraficaToro extends Perspectiva {
 							} 
 							bSHX1 = false;
 							System.out.println("(S"+j+")Pone bSHX1 a false 1");
+						} else {
+							double testCoord[] = {PointR3.getPointAvg(currTriang.getPoint(1),currTriang.getPoint(3)).getX(), 0.0};
+							for (int k=0; k < testCoord.length && bSHX1; k++) {
+								double x0 =  testCoord[k];
+								PointR3 X0 = new PointR3(x0,0,0);
+								double num = (new matrix()).prod_escalar(PointR3.getPointDiff(currTriang.getPoint(1), X0).getArr(), currTriang.getNormal().getArr());
+								AristR3 PVO_X0 = new AristR3(X0,PVO);
+								double den = (new matrix()).prod_escalar(PVO_X0.getVersor().getArr(), currTriang.getNormal().getArr());
+								double X1CParam = num / den; 
+								PointR3 X1C = PointR3.getPointSum(X0, PVO_X0.getVersor().escalado(X1CParam)); // Punto de corte en el espacio del plano de la cara con la recta PVO_X0
+								AristR3 PVO_X1C = new AristR3(X1C,PVO);
+								if (PVO_X0.getLength() > PVO_X1C.getLength() && Math.abs(PVO_X0.getLength()-PVO_X1C.getLength()) > 0.001) { // Posible ocultamiento del eje X1 con cara
+									Point X1C_proy = comp.projectedPoint(X1C);
+									if (POL.getBounds2D().contains(X1C_proy.getX(),X1C_proy.getY())) {
+										bSHX1 = false;
+									}
+								}								
+							} // End FOR	
 						}
-						if (((int)DSX2) != 0 && POL.getBounds2D().contains(pProyCX2.getX(),pProyCX2.getY()) && pCX2.getY() > 0) { // Eje Y cortando Triangulo j
+						if (((int)DSX2) != 0 && (POL.getBounds2D().contains(pProyCX2.getX(),pProyCX2.getY()) || currTriang.esPuntoInterior(pCX2)) && pCX2.getY() > 0) { // Eje Y cortando Triangulo j
 							System.out.println("(S"+j+")### - pProyCX2.getX(): "+pProyCX2.getX()+", pProyCX2.getY(): "+pProyCX2.getY()+"------pCX2.getY(): "+pCX2.getY());
 							comp.addShape((int)pProyCX2.getX()-2, (int)pProyCX2.getY()-2, (int)pProyCX2.getX()+2, (int)pProyCX2.getY()+2, Color.BLACK);
 							comp.addShape((int)pProyCX2.getX()-2, (int)pProyCX2.getY()+2, (int)pProyCX2.getX()+2, (int)pProyCX2.getY()-2, Color.BLACK);
@@ -338,8 +357,26 @@ public class GraficaToro extends Perspectiva {
 							} 
 							bSHX2 = false;
 							System.out.println("(S"+j+")Pone bSHX2 a false 1");
+						} else {
+							double testCoord[] = {PointR3.getPointAvg(currTriang.getPoint(1),currTriang.getPoint(3)).getY(), 0.0};
+							for (int k=0; k < testCoord.length && bSHX2; k++) {
+								double y0 =  testCoord[k];
+								PointR3 Y0 = new PointR3(y0,0,0);
+								double num = (new matrix()).prod_escalar(PointR3.getPointDiff(currTriang.getPoint(1), Y0).getArr(), currTriang.getNormal().getArr());
+								AristR3 PVO_Y0 = new AristR3(Y0,PVO);
+								double den = (new matrix()).prod_escalar(PVO_Y0.getVersor().getArr(), currTriang.getNormal().getArr());
+								double Y1CParam = num / den; 
+								PointR3 Y1C = PointR3.getPointSum(Y0, PVO_Y0.getVersor().escalado(Y1CParam)); // Punto de corte en el espacio del plano de la cara con la recta PVO_Y0
+								AristR3 PVO_Y1C = new AristR3(Y1C,PVO);
+								if (PVO_Y0.getLength() > PVO_Y1C.getLength() && Math.abs(PVO_Y0.getLength()-PVO_Y1C.getLength()) > 0.001) { // Posible ocultamiento del eje Y1 con cara
+									Point Y1C_proy = comp.projectedPoint(Y1C);
+									if (POL.getBounds2D().contains(Y1C_proy.getX(),Y1C_proy.getY())) {
+										bSHX2 = false;
+									}
+								}								
+							} // End FOR	
 						}
-						if (((int)DSX3) != 0 && POL.getBounds2D().contains(pProyCX3.getX(),pProyCX3.getY()) && pCX3.getZ() > 0) { // Eje Z cortando Triangulo j
+						if (((int)DSX3) != 0 && (POL.getBounds2D().contains(pProyCX3.getX(),pProyCX3.getY()) || currTriang.esPuntoInterior(pCX3)) && pCX3.getZ() > 0) { // Eje Z cortando Triangulo j
 							System.out.println("(S"+j+")### - pProyCX3.getX(): "+pProyCX3.getX()+", pProyCX3.getY(): "+pProyCX3.getY()+"------pCX3.getZ(): "+pCX3.getZ());
 							comp.addShape((int)pProyCX3.getX()-2, (int)pProyCX3.getY()-2, (int)pProyCX3.getX()+2, (int)pProyCX3.getY()+2, Color.BLACK);
 							comp.addShape((int)pProyCX3.getX()-2, (int)pProyCX3.getY()+2, (int)pProyCX3.getX()+2, (int)pProyCX3.getY()-2, Color.BLACK);
@@ -352,6 +389,24 @@ public class GraficaToro extends Perspectiva {
 							} 
 							bSHX3 = false;
 							System.out.println("(S"+j+")Pone bSHX3 a false 1");
+						} else {
+							double testCoord[] = {PointR3.getPointAvg(currTriang.getPoint(1),currTriang.getPoint(3)).getZ(), 0.0};
+							for (int k=0; k < testCoord.length && bSHX3; k++) {
+								double z0 =  testCoord[k];
+								PointR3 Z0 = new PointR3(z0,0,0);
+								double num = (new matrix()).prod_escalar(PointR3.getPointDiff(currTriang.getPoint(1), Z0).getArr(), currTriang.getNormal().getArr());
+								AristR3 PVO_Z0 = new AristR3(Z0,PVO);
+								double den = (new matrix()).prod_escalar(PVO_Z0.getVersor().getArr(), currTriang.getNormal().getArr());
+								double Z1CParam = num / den; 
+								PointR3 Z1C = PointR3.getPointSum(Z0, PVO_Z0.getVersor().escalado(Z1CParam)); // Punto de corte en el espacio del plano de la cara con la recta PVO_Z0
+								AristR3 PVO_Z1C = new AristR3(Z1C,PVO);
+								if (PVO_Z0.getLength() > PVO_Z1C.getLength() && Math.abs(PVO_Z0.getLength()-PVO_Z1C.getLength()) > 0.001) { // Posible ocultamiento del eje Z1 con cara
+									Point Z1C_proy = comp.projectedPoint(Z1C);
+									if (POL.getBounds2D().contains(Z1C_proy.getX(),Z1C_proy.getY())) {
+										bSHX3 = false;
+									}
+								}								
+							} // End FOR	
 						}						
 					}	
 					nShapes+=comp.addShapes(currTriang);
@@ -378,7 +433,7 @@ public class GraficaToro extends Perspectiva {
 			}
 			comp.repaint();
 			try{
-				Thread.sleep(50);
+				Thread.sleep(30);
 			}catch(InterruptedException ex){
 				Thread.currentThread().interrupt();
 			}

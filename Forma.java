@@ -52,6 +52,17 @@ class PointR3 {
 	public static PointR3 toCartesian(double R_, double r_, double theta_, double phi_){ // Toro a Cartesianas
 		return new PointR3(Math.cos(theta_)*(R_+r_*Math.cos(phi_)),Math.sin(theta_)*(R_+r_*Math.cos(phi_)),r_*Math.sin(phi_));
 	}	
+	public static PointR3 toCartesianF8(double t, double theta_, double phi_){ // Patametrica 8 de revolucion a Cartesianas
+		return new PointR3(t*Math.cos(phi_)*Math.sin(phi_), t*Math.cos(theta_)*Math.sin(theta_)*Math.sin(phi_), t*Math.sin(theta_)*Math.sin(phi_));
+	}		
+	public static PointR3 toCartesianPF(double a, double b, double theta_, double phi_){ // Piriforme a Cartesianas
+		//return new PointR3(a*(1+Math.sin(phi_)),b*(1+Math.sin(phi_))*Math.cos(phi_)*Math.cos(theta_),b*(1+Math.sin(phi_))*Math.cos(phi_)*Math.sin(theta_));
+		return new PointR3(b*(1+Math.sin(phi_))*Math.cos(phi_)*Math.sin(theta_),b*(1+Math.sin(phi_))*Math.cos(phi_)*Math.cos(theta_),a*(1+Math.sin(phi_)));
+	}	
+	public static PointR3 toCartesianLem(double a, double theta_, double phi_){ // Patametrica Lemniscata
+		//return new PointR3(a*Math.cos(phi_)/(1+Math.pow(Math.sin(phi_),2)),(a*Math.sin(phi_)*Math.cos(phi_)/(1+Math.pow(Math.sin(phi_),2)))*Math.cos(theta_),(a*Math.sin(phi_)*Math.cos(phi_)/(1+Math.pow(Math.sin(phi_),2)))*Math.sin(theta_));
+		return new PointR3((a*Math.sin(phi_)*Math.cos(phi_)/(1+Math.pow(Math.sin(phi_),2)))*Math.sin(theta_),(a*Math.sin(phi_)*Math.cos(phi_)/(1+Math.pow(Math.sin(phi_),2)))*Math.cos(theta_),a*Math.cos(phi_)/(1+Math.pow(Math.sin(phi_),2)));
+	}		
 	public static PointR3 toCartesianFromCil(double rho_, double theta_, double z_){ // Cilindricas a Cartesianas
 		return new PointR3(rho_*Math.cos(theta_),rho_*Math.sin(theta_),z_);
 	}
@@ -165,7 +176,32 @@ class Triangulo implements Comparable<Triangulo> {
 			PointR3 V = PointR3.getPointDiff(pR3[2],pR3[1]);
 			//PointR3 V = PointR3.getPointDiff(pR3[2],pR3[0]);
 			return PointR3.getProdVect(U,V);
-		}		
+		}
+		public boolean esPuntoDelPlano(PointR3 pSP) {
+			double val = (new matrix()).prod_escalar(PointR3.getPointDiff(pSP,pR3[0]).getArr(), getNormal().getArr());
+			return (val>-0.0005 && val<0.0005);
+		}
+		public boolean esPuntoInterior(PointR3 pST) {
+			boolean estaIncluido = false;
+			if (esPuntoDelPlano(pST)){ // Es punto del mismo plano resta ver si esta dentro del tiangulo
+				PointR3 pV1 = (new AristR3(pST, pR3[0])).getVersor();
+				PointR3 pV2 = (new AristR3(pST, pR3[1])).getVersor();
+				PointR3 pV3 = (new AristR3(pST, pR3[2])).getVersor();
+				double peV1V2 = (new matrix()).prod_escalar(pV1.getArr(), pV2.getArr());
+				double peV2V3 = (new matrix()).prod_escalar(pV2.getArr(), pV3.getArr());
+				double peV3V1 = (new matrix()).prod_escalar(pV3.getArr(), pV1.getArr());
+				if (peV1V2 < 0.0 && peV2V3 < 0.0 && peV3V1 < 0.0) {
+					estaIncluido = true;
+				} else {
+					double dSumaDeAngulos = Math.acos(peV1V2) + Math.acos(peV2V3) + Math.acos(peV3V1);
+					if ( dSumaDeAngulos >= (2*Math.PI - 0.001) ) {
+						//System.out.println("peV1V2="+peV1V2+", peV2V3="+peV2V3+", peV3V1="+peV3V1+"********* dSumaDeAngulos= "+dSumaDeAngulos);
+						estaIncluido = true;
+					}
+				}
+			}
+			return estaIncluido;
+		}
 		public boolean esVisible(PointR3 PVO) {
 			distPVO = new AristR3(pR3[0], PVO).getLength();
 			return ((new matrix()).prod_escalar(PointR3.getPointDiff(PVO, pR3[0]).getArr(), getNormal().getArr())>0?true:false);
@@ -195,7 +231,7 @@ class Triangulo implements Comparable<Triangulo> {
 			return borderColor;
 		}
     // Override the compareTo() method
-    @Override public int compareTo(Triangulo t)
+    @Override public int compareTo(Triangulo t) // Este comparador ordena de MAYOR a menor (orden Descendente).
     {
         if (distPVO > t.distPVO) {
             return -1;
@@ -602,6 +638,106 @@ class Toro {
 			for (int j=0; j < hSteps; j++) {
 				surface.add(new Triangulo(PointR3.getPointSum(center, PointR3.toCartesian(radMayor, radMenor, hArcLen*j,vArcLen*i)), PointR3.getPointSum(center, PointR3.toCartesian(radMayor, radMenor, hArcLen*(j+1),vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesian(radMayor, radMenor, hArcLen*j,vArcLen*(i+1))), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
 				surface.add(new Triangulo(PointR3.getPointSum(center, PointR3.toCartesian(radMayor, radMenor, hArcLen*(j+1),vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesian(radMayor, radMenor, hArcLen*j,vArcLen*i)), PointR3.getPointSum(center, PointR3.toCartesian(radMayor, radMenor, hArcLen*(j+1),vArcLen*i)), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
+			}
+		}
+	}
+	public int size() {
+		return surface.size();
+	}
+	public Triangulo getElem(int iPos) {
+		return surface.get(iPos);
+	}
+	public void setElem(int iPos, Triangulo t) {
+		surface.set(iPos, t);
+	}
+}
+
+class Ocho {
+	PointR3 center;
+	double size;
+	int vSteps,hSteps;
+	Random rand = new Random();
+	Color fillColor;
+	LinkedList<Triangulo> surface = new LinkedList<Triangulo>();
+	public Ocho(PointR3 pCenter, double t, int iVSteps, int iHSteps, Color fillColor_) {
+		center = pCenter;
+		size = t;
+		vSteps = iVSteps;
+		hSteps = iHSteps;
+		fillColor = fillColor_;
+		double vArcLen = 2*Math.PI / vSteps;
+		double hArcLen = 2*Math.PI / hSteps;
+		for (int i=0; i < vSteps; i++) {
+			for (int j=0; j < hSteps; j++) {
+				surface.add(new Triangulo(PointR3.getPointSum(center, PointR3.toCartesianF8(size, hArcLen*j,vArcLen*i)), PointR3.getPointSum(center, PointR3.toCartesianF8(size, hArcLen*(j+1),vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesianF8(size, hArcLen*j,vArcLen*(i+1))), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
+				surface.add(new Triangulo(PointR3.getPointSum(center, PointR3.toCartesianF8(size, hArcLen*(j+1),vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesianF8(size, hArcLen*j,vArcLen*i)), PointR3.getPointSum(center, PointR3.toCartesianF8(size, hArcLen*(j+1),vArcLen*i)), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
+			}
+		}
+	}
+	public int size() {
+		return surface.size();
+	}
+	public Triangulo getElem(int iPos) {
+		return surface.get(iPos);
+	}
+	public void setElem(int iPos, Triangulo t) {
+		surface.set(iPos, t);
+	}
+}
+
+class Piriforme {
+	PointR3 center;
+	double radMayor, radMenor;
+	int vSteps,hSteps;
+	Random rand = new Random();
+	Color fillColor;
+	LinkedList<Triangulo> surface = new LinkedList<Triangulo>();
+	public Piriforme(PointR3 pCenter, double a, double b, int iVSteps, int iHSteps, Color fillColor_) {
+		center = pCenter;
+		radMayor = a;
+		radMenor = b;
+		vSteps = iVSteps;
+		hSteps = iHSteps;
+		fillColor = fillColor_;
+		double vArcLen = 2*Math.PI / vSteps;
+		double hArcLen = 2*Math.PI / hSteps;
+		for (int i=0; i < vSteps; i++) {
+			for (int j=0; j < hSteps; j++) {
+				surface.add(new Triangulo(PointR3.getPointSum(center, PointR3.toCartesianPF(radMayor, radMenor, hArcLen*j,vArcLen*i)), PointR3.getPointSum(center, PointR3.toCartesianPF(radMayor, radMenor, hArcLen*(j+1),vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesianPF(radMayor, radMenor, hArcLen*j,vArcLen*(i+1))), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
+				surface.add(new Triangulo(PointR3.getPointSum(center, PointR3.toCartesianPF(radMayor, radMenor, hArcLen*(j+1),vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesianPF(radMayor, radMenor, hArcLen*j,vArcLen*i)), PointR3.getPointSum(center, PointR3.toCartesianPF(radMayor, radMenor, hArcLen*(j+1),vArcLen*i)), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
+			}
+		}
+	}
+	public int size() {
+		return surface.size();
+	}
+	public Triangulo getElem(int iPos) {
+		return surface.get(iPos);
+	}
+	public void setElem(int iPos, Triangulo t) {
+		surface.set(iPos, t);
+	}
+}
+
+class Lemniscata {
+	PointR3 center;
+	double a;
+	int vSteps,hSteps;
+	Random rand = new Random();
+	Color fillColor;
+	LinkedList<Triangulo> surface = new LinkedList<Triangulo>();
+	public Lemniscata(PointR3 pCenter, double a_, int iVSteps, int iHSteps, Color fillColor_) {
+		center = pCenter;
+		a = a_;
+		vSteps = iVSteps;
+		hSteps = iHSteps;
+		fillColor = fillColor_;
+		double vArcLen = Math.PI / vSteps;
+		double hArcLen = 2*Math.PI / hSteps;
+		for (int i=0; i < vSteps; i++) {
+			for (int j=0; j < hSteps; j++) {
+				surface.add(new Triangulo(PointR3.getPointSum(center, PointR3.toCartesianLem(a, hArcLen*j,vArcLen*i)), PointR3.getPointSum(center, PointR3.toCartesianLem(a, hArcLen*(j+1),vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesianLem(a, hArcLen*j,vArcLen*(i+1))), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
+				surface.add(new Triangulo(PointR3.getPointSum(center, PointR3.toCartesianLem(a, hArcLen*(j+1),vArcLen*(i+1))), PointR3.getPointSum(center, PointR3.toCartesianLem(a, hArcLen*j,vArcLen*i)), PointR3.getPointSum(center, PointR3.toCartesianLem(a, hArcLen*(j+1),vArcLen*i)), (fillColor!=null?fillColor:new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat()))));
 			}
 		}
 	}
