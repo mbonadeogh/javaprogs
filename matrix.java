@@ -78,13 +78,7 @@ public class matrix {
 	Retorna una matriz cuadrada de dimensión 'dim', con todos sus elementos con el valor 'val'
 	*/
     public double [][] rellena(int dim, double val) {
-		double c[][]=new double[dim][dim];
-		for (int i=0; i < dim; i++) {
-			for (int j=0; j < dim; j++) {
-				c[i][j] = val;
-			}
-		}
-		return c;
+		return rellena(dim, dim, val);
 	}
 	
 	/**
