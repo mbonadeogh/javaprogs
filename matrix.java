@@ -60,6 +60,32 @@ public class matrix {
 		}
 		return c;
 	}
+
+	/**
+	Retorna una matriz de dimensión filLen*colLen, con todos sus elementos con el valor 'val'
+	*/
+    public double [][] rellena(int filLen, int colLen, double val) {
+		double c[][]=new double[filLen][colLen];
+		for (int i=0; i < filLen; i++) {
+			for (int j=0; j < colLen; j++) {
+				c[i][j] = val;
+			}
+		}
+		return c;
+	}
+	
+	/**
+	Retorna una matriz cuadrada de dimensión 'dim', con todos sus elementos con el valor 'val'
+	*/
+    public double [][] rellena(int dim, double val) {
+		double c[][]=new double[dim][dim];
+		for (int i=0; i < dim; i++) {
+			for (int j=0; j < dim; j++) {
+				c[i][j] = val;
+			}
+		}
+		return c;
+	}
 	
 	/**
 	Retorna la matriz resultante de realizar el producto de la matriz "a" por la inversa de "b",
