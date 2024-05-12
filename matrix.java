@@ -176,6 +176,7 @@ public class matrix {
 		//int submat[][];
 		if (a.length == 1) {
 			calculo = a[0][0];
+			//System.out.println("a.length="+a.length);
 		} else {
 			for (int col=0; col < a.length; col++) {
 				calculo+=(Math.pow(-1,(col/*+2*/))*a[0][col]*determinante(submat(a,0,col)));
@@ -439,13 +440,21 @@ public class matrix {
 	Retorna la matriz inversa de la matriz "a" pasada como parámetro.
 	*/
 	public double [][] inversa(double a[][]) {
+		double c[][] = new double[a.length][a[0].length];
 		double det = determinante(a);
-		double c[][] = adjunta(a);
-		for (int i=0; i < a.length; i++) {
-			for (int j=0; j < a.length; j++) {
-				c[i][j]=c[i][j] / det;
+		if (a.length > 1) {
+			c = adjunta(a);
+			for (int i=0; i < a.length; i++) {
+				for (int j=0; j < a.length; j++) {
+					c[i][j]=c[i][j] / det;
+				}
+			}	
+		} else {
+			if (det!=0.0) {
+				c[0][0]=1.0/det;
 			}
-		}	
+		}
+
 		return c;		
 	}
 
@@ -1031,7 +1040,22 @@ public static void main(String [] args) {
 		System.out.println("--------------------Comprobación VecPr (Jacobi)-------(OK cuando Mat original es simetrica, no siempre cuando no lo es)-------------------------------------------");		
 		printMat((new matrix()).columna(diagJ.getMatVecPr(),2));
 		printMat((new matrix()).producto(L,(new matrix()).columna(diagJ.getMatVecPr(),2)));		// L*VecP2 = ValP2*VecP2
-		//System.out.println("---------------");
+		System.out.println("---------------");
+		double T[][]={{4,2},{2,4}};	
+		System.out.println("Matriz T (mayuscula):");
+		printMat(T);
+		algQR = (new matrix()).new AlgoritmoQR(T,50);
+		System.out.println("Matriz R último paso:");
+		printMat(algQR.getMatR());
+		System.out.println("Matriz Q último paso:");
+		printMat(algQR.getMatQ());		
+		System.out.println("Autovalores:");
+		valp = algQR.getAutovalores2();
+		//printMat(algQR.getAutovalores());
+		printMat(valp);	// Metodo 2
+		System.out.println("Matriz de Vectores Propios:");
+		printMat(algQR.getMatVecPr());		
+		
 		//printMat((new matrix()).roundMat((new matrix()).producto(algQR.getMatVecPr(),(new matrix()).transpuesta(algQR.getAutovalores()))));		
 		//printMat(Et);		
 		/*double g[][]={{1.0,2.0},{-1.0,3.0}}, q[][];
